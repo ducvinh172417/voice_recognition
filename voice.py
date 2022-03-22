@@ -61,7 +61,22 @@ Russian	(ru)
 Chinese	(zh-CN)
 Spanish	(es)
 Vietnamese	(vi)''')
-                lang_codename = input("Choose language you want (en, vi,...): ")
+                ans = input("Choose language you want (en, vi,...): ")
+                ans = ans.lower()
+                if ans == 'english' or ans == 'en':
+                    lang_codename = 'en'
+                elif ans == 'vietnam' or ans == 'việt nam' or ans == 'vi' or ans == 'vn':
+                    lang_codename = 'vi'
+                elif ans == 'korean' or ans == '한국어' or ans == 'kr':
+                    lang_codename = 'ko'
+                elif ans == 'russian' or ans == 'Русский язык' or ans == 'ru':
+                    lang_codename = 'ru'
+                elif ans == 'chinese' or ans == '汉语' or ans == '漢語' or ans == 'zh-CN':
+                    lang_codename = 'zh-CN'
+                elif ans == 'spanish' or ans == 'español' or ans == 'es':
+                    lang_codename = 'es'
+                elif ans == '' or ans != '':
+                    print('Invalid input or language not supported')
                 return lang_codename
             except:
                 print('Invalid input!')
