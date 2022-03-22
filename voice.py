@@ -2,7 +2,7 @@ import pyaudio
 import keyboard
 import numpy as np
 from scipy.io import wavfile
-from os import path
+from os import path, remove
 import speech_recognition as sr
 import pyttsx3
 
@@ -39,12 +39,11 @@ class Recorder():
                 recorded_data = [np.frombuffer(frame, dtype=np.int16) for frame in recorded_data]
                 wav = np.concatenate(recorded_data, axis=0)
                 wavfile.write(self.filename, self.sample_rate, wav)
-                print("You should have a wav file in the current directory")
                 break
 
 
     def listen(self):
-        print(f"Press {self.START_KEY} to start and {self.STOP_KEY} to quit!")
+        print(f"Press `{self.START_KEY}` to start and `{self.STOP_KEY}` to quit!")
         while True:
             if keyboard.is_pressed(self.START_KEY):
                 print('\nrecord started')
@@ -81,51 +80,80 @@ Vietnamese	(vi)''')
             except:
                 print('Invalid input!')
 
-recorder = Recorder("mic.wav") #name of output file
-lan = recorder.language()
-recorder.listen()
+    #ask to redo
+def redo():
+    while True:
+        try:
+            decide = input('Do you want to try again?(y/n): ')
+            decide = decide.lower()
+            if decide == 'y':
+                break
+            elif decide == 'n':
+                input('See you again!')
+                return False
+            else:
+                print('Invalid input!')
+                redo()
+        except:
+            print('Invalid input!')
+            redo()
+    return True
 
 
 
-AUDIO_FILE = path.join(path.dirname(path.realpath(_file_)), "mic.wav")
-# AUDIO_FILE = path.join(path.dirname(path.realpath(_file_)), "french.aiff")
-# AUDIO_FILE = path.join(path.dirname(path.realpath(_file_)), "chinese.flac")
-
-# use the audio file as the audio source
-r = sr.Recognizer()
-with sr.AudioFile(AUDIO_FILE) as source:
-    audio = r.record(source)  # read the entire audio file
+#main code
+while True:
+    recorder = Recorder("mic.wav") #name of output file
+    lan = recorder.language()
+    recorder.listen()
 
 
 
-# recognize speech using Google Speech Recognition
-try:
-    # for testing purposes, we're just using the default API key
-    # to use another API key, use r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")
-    # instead of r.recognize_google(audio)
-    print("Google Speech Recognition thinks you said " + r.recognize_google(audio, language = lan ))
-except sr.UnknownValueError:
-    print("Google Speech Recognition could not understand audio")
-except sr.RequestError as e:
-    print("Could not request results from Google Speech Recognition service; {0}".format(e))
+    AUDIO_FILE = path.join(path.dirname(path.realpath(__file__)), "mic.wav")
+    # AUDIO_FILE = path.join(path.dirname(path.realpath(__file__)), "french.aiff")
+    # AUDIO_FILE = path.join(path.dirname(path.realpath(__file__)), "chinese.flac")
+
+    # use the audio file as the audio source
+    r = sr.Recognizer()
+    with sr.AudioFile(AUDIO_FILE) as source:
+        audio = r.record(source)  # read the entire audio file
 
 
-    #text_to_speech
-try:
-    input_text = r.recognize_google(audio, language = lan )
-except:
-    input_text = "I did not quite catch that"
-print(input_text)
+
+    # recognize speech using Google Speech Recognition
+    try:
+        # for testing purposes, we're just using the default API key
+        # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
+        # instead of `r.recognize_google(audio)`
+        print("you just said " + r.recognize_google(audio, language = lan))
+    except sr.UnknownValueError:
+        print("Speech Recognition could not understand what you said")
+    except sr.RequestError as e:
+        print("Could not request results from Google Speech Recognition service; {0}".format(e))
 
 
-engine = pyttsx3.init()
-#change active voice
-voices = engine.getProperty('voices')
-engine.setProperty('voice', voices[1].id)
+        #text_to_speech
+    try:
+        input_text = r.recognize_google(audio, language = lan )
+    except:
+        input_text = "I did not quite catch that"
 
-#change reading speed
-rate = engine.getProperty('rate')
-engine.setProperty('rate', rate-50)
 
-engine.say("You was saying: " + input_text)
-engine.runAndWait()
+    engine = pyttsx3.init()
+    #change active voice
+    voices = engine.getProperty('voices')
+    engine.setProperty('voice', voices[1].id)
+
+    #change reading speed
+    engine.setProperty('rate', 125)
+    engine.say("You was saying: " + input_text)
+    engine.runAndWait()
+    remove('mic.wav')
+    
+    re = redo()
+    if re == True:
+        continue
+    elif re == False:
+        break
+
+
